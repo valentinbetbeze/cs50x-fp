@@ -11,9 +11,10 @@
  * the directory structure, modifying the directory structure and much
  * more.
  * To do so, the program first retrieves, parses, and stores the input
- * in a linked list. It then goes through the linked list to retrieve, 
- * call and execute the entered function along with the given
- * arguments.
+ * into a linked list. It then goes through a switch case statement and 
+ * checks the head's argument. If valid, the program will call and 
+ * execute the command along with other arguments present in the linked
+ * list.
  * @todo To complete.
 */
 #include <stdio.h>
@@ -89,11 +90,11 @@ Token *parse_input(char *ptr);
 int get_argc(Token *head);
 
 /**
- * int get_argv(Token *head, int n)
+ * char *get_argv(Token *head, int index)
  * @brief Get the value of the n-th arguments.
  * 
  * @param[in] head	Memory area where the parsed data is.
- * @param[in] n		Index of the argument.
+ * @param[in] index	Index of the argument.
  * @return			Character pointer of the n-th argument.
  * 
  * The function get_argv() accepts a pointer @p head as input and
@@ -120,6 +121,8 @@ void free_tokens(Token *head);
 
 int main(void)
 {
+	printf(" *** To exit the program, type 'exit' ***\n");
+
 	// Allocate memory for the input buffer
 	char *input = malloc(SIZE_INPUT);
 	if (input == NULL)
@@ -145,10 +148,51 @@ int main(void)
 			}
 
 			int argc = get_argc(head);
+			char *command = get_argv(head, 0);
 
-			for (int i = 0; i < argc; i++)
+			if (!strcmp(command, "echo"))
 			{
-				printf("%i: %s\n", i + 1, get_argv(head, i));
+				/// @todo statement
+			}
+			else if (!strcmp(command, "pwd"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "ls"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "cd"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "touch"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "rm"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "mkdir"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "rmdir"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "mv"))
+			{
+				/// @todo statement
+			}
+			else if (!strcmp(command, "cat"))
+			{
+				/// @todo statement
+			}
+			else if (strcmp(command, "exit"))
+			{
+				printf("Error: %s: unknown command\n", command);
 			}
 
 			free_tokens(head);
@@ -182,7 +226,7 @@ int get_input(char *ptr)
 			printf("Error: Command size exceeded (%i characters max.)\n", SIZE_INPUT);
 			return 1;
 		}
-        ptr[index] = character;
+		ptr[index] = character;
 		index++;
 
     } while ((character = getchar()) != '\n');
@@ -295,9 +339,9 @@ int get_argc(Token *head)
 }
 
 
-char *get_argv(Token *head, int n)
+char *get_argv(Token *head, int index)
 {
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < index; i++)
 	{
 		if (head->next == NULL)
 		{
