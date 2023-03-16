@@ -44,6 +44,7 @@ typedef struct token
  * @brief Retrieve data from the buffer and stores it in a string.
  * 
  * @param[out] ptr	Memory area to store the data to.
+ * @return			An integer stating the outcome of the function.
  * @retval			0 on success.
  * 					1 on failure.
  * 
@@ -118,10 +119,25 @@ char *get_argv(Token *head, int index);
 */
 void free_tokens(Token *head);
 
+/**
+ * void echo(Token *head, int argc)
+ * @brief Display the argument(s) given as input.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function echo() accepts a pointer @p head and an integer 
+ * @p argc as input. 
+ * It displays the arguments following the command. The use of
+ * double quotation mark is not required to print text with spaces.
+*/
+void echo(Token *head, int argc);
+
 
 int main(void)
 {
-	printf(" *** To exit the program, type 'exit' ***\n");
+	printf("**** To exit the program, type 'exit' ****\n");
 
 	// Allocate memory for the input buffer
 	char *input = malloc(SIZE_INPUT);
@@ -135,7 +151,6 @@ int main(void)
 	do
 	{
 		printf("£ ");
-		memset(input, 0, SIZE_INPUT);
 
 		// Wait for input
 		if (!get_input(input))
@@ -149,10 +164,15 @@ int main(void)
 
 			int argc = get_argc(head);
 			char *command = get_argv(head, 0);
-
+			/**
+			 * @note To improve if more commands are added.
+			 * Search time: poor (linear).
+			 * Code maintenance: medium (will get worse with more
+			 * commands)
+			*/ 
 			if (!strcmp(command, "echo"))
 			{
-				/// @todo statement
+				echo(head, argc);
 			}
 			else if (!strcmp(command, "pwd"))
 			{
@@ -194,10 +214,8 @@ int main(void)
 			{
 				printf("Error: %s: unknown command\n", command);
 			}
-
 			free_tokens(head);
 		}
-
 	} while (strcasecmp(input, "exit"));
 
 	free(input);
@@ -209,32 +227,37 @@ int get_input(char *ptr)
 {
 	char character = '\0';
 	int index = 0;
-	memset(ptr, 0, sizeof(ptr));
+	memset(ptr, 0, SIZE_INPUT);
 
-	// Remove all spaces before the input, if any
-	while ((character = getchar()) == ' ');
-
-	// Get input until new line
-    do
+    while ((character = getchar()) != '\n')
     {
-		// The entered command is too long
+		// The input is too long
 		if (index > SIZE_INPUT - 1)
 		{
 			// Empty the buffer
 			while (getchar() != '\n');
-			memset(ptr, 0, sizeof(ptr));
 			printf("Error: Command size exceeded (%i characters max.)\n", SIZE_INPUT);
 			return 1;
 		}
 		ptr[index] = character;
 		index++;
-
-    } while ((character = getchar()) != '\n');
-
-	// Remove all spaces after the input (if any), starting from the end until a character is found.
+    }
+	// If no input
+	if (!strlen(ptr))
+	{
+		return 1;
+	}
+	// Remove whitespaces (if any)
+	for (int i = 0; i < strlen(ptr); i ++)
+	{
+		if (ptr[i] != ' ') 
+		{
+			break;
+		}
+		ptr[i] = '\0';
+	}
 	for (int i = strlen(ptr) - 1; i >= 0; i--)
 	{
-		// Character found
 		if (ptr[i] != ' ') 
 		{
 			break;
@@ -272,7 +295,7 @@ Token *parse_input(char *ptr)
 		if ((ptr[i] == ' ' && !marks) || (i == strlen(ptr) - 1))
 		{	
 			// Include character if it is the last argument of the command
-			if (i == strlen(ptr) - 1)
+			if ((i == strlen(ptr) - 1) && ptr[i] != '"')
 			{
 				buffer[index_buffer] = ptr[i];
 			}
@@ -365,3 +388,12 @@ void free_tokens(Token *head)
 	free(head);
 }
 
+
+void echo(Token *head, int argc)
+{
+	for (int i = 1; i < argc; i++)
+	{
+		printf("%s ", get_argv(head, i));
+	}
+	printf("\n");
+}
