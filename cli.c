@@ -19,6 +19,7 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -43,20 +44,20 @@ typedef struct token
 
 
 /**
- * int get_input(char *ptr)
+ * bool get_input(char *ptr)
  * @brief Retrieve data from the buffer and stores it in a string.
  * 
  * @param[out] ptr	Memory area to store the data to.
- * @return			An integer stating the outcome of the function.
- * @retval			0 on success.
- * 					1 on failure.
+ * @return			A boolean stating the outcome of the function.
+ * @retval			true on success.
+ * 					false on failure.
  * 
  * The function 'get_input()' accepts a pointer @p ptr as input
  * and returns an integer indicating success or failure. If the
  * input command is too long, the function will print an error
- * message and return 1.
+ * message and return false.
 */
-int get_input(char *ptr);
+bool get_input(char *ptr);
 
 /**
  * Token *parse_input(char *ptr)
@@ -123,19 +124,19 @@ char *get_argv(Token *head, int index);
 void free_tokens(Token *head);
 
 /**
- * int is_option(char *arg)
+ * bool is_option(char *arg)
  * @brief Check if the argument is an option.
  * 
  * @param[in] arg	Pointer to an array of characters.
- * @return			An integer stating the outcome of the function.
- * @retval			1 if the argument is an option.
- * 					0 if not.
+ * @return			A boolean stating the outcome of the function.
+ * @retval			true if the argument is an option.
+ * 					false if not.
  * 
  * The function is_option() accepts a character pointer @p arg as
  * input. It checks whether the argument is an option or not, by
  * looking for an hyphen at the beginning of the given string.
 */
-int is_option(char *arg);
+bool is_option(char *arg);
 
 /**
  * void echo(Token *head, int argc)
@@ -217,6 +218,23 @@ void rm(Token *head, int argc);
 */
 void rmdir_cli(Token *head, int argc);
 
+/**
+ * void cat(Token *head, int argc)
+ * @brief Display the content of a file.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function cat() accepts a pointer @p head and an integer
+ * @p argc as input. It displays the content of a file on the
+ * standard output. Several filenames can be given as arguments.
+ * An error message is instead displayed if the file cannot be
+ * found or open.
+*/
+void cat(Token *head, int argc);
+
+
 
 int main(void)
 {
@@ -236,7 +254,7 @@ int main(void)
 		printf("£ ");
 
 		// Wait for input
-		if (!get_input(input))
+		if (get_input(input))
 		{
 			Token *head = parse_input(input);
 			if (head == NULL)
@@ -263,11 +281,11 @@ int main(void)
 			}
 			else if (!strcmp(command, "ls"))
 			{
-				// todo statement
+				// ls();
 			}
 			else if (!strcmp(command, "cd"))
 			{
-				// todo statement
+				// cd();
 			}
 			else if (!strcmp(command, "touch"))
 			{
@@ -279,7 +297,7 @@ int main(void)
 			}
 			else if (!strcmp(command, "mkdir"))
 			{
-				// todo statement
+				// mkdir();
 			}
 			else if (!strcmp(command, "rmdir"))
 			{
@@ -287,11 +305,11 @@ int main(void)
 			}
 			else if (!strcmp(command, "mv"))
 			{
-				// todo statement
+				// mv();
 			}
 			else if (!strcmp(command, "cat"))
 			{
-				// todo statement
+				cat(head, argc);
 			}
 			else if (strcmp(command, "exit"))
 			{
@@ -306,7 +324,7 @@ int main(void)
 }
 
 
-int get_input(char *ptr)
+bool get_input(char *ptr)
 {
 	char character = '\0';
 	int index = 0;
@@ -320,7 +338,8 @@ int get_input(char *ptr)
 			// Empty the buffer
 			while (getchar() != '\n');
 			printf("Error: Command size exceeded (%i characters max.)\n", SIZE_INPUT);
-			return 1;
+
+			return false;
 		}
 		ptr[index] = character;
 		index++;
@@ -328,7 +347,7 @@ int get_input(char *ptr)
 	// If no input
 	if (!strlen(ptr))
 	{
-		return 1;
+		return false;
 	}
 	// Remove whitespaces (if any)
 	for (int i = 0; i < strlen(ptr); i ++)
@@ -347,13 +366,14 @@ int get_input(char *ptr)
 		}
 		ptr[i] = '\0';
 	}
-	return 0;
+	return true;
 }
 
 
 Token *parse_input(char *ptr)
 {
-	int marks = 0, parsing = 0, index_buffer = 0;
+	bool marks = false, parsing = false;
+	int index_buffer = 0;
 
 	// This buffer will be used during parsing
 	char *buffer = calloc(SIZE_INPUT, sizeof(char));
@@ -381,7 +401,7 @@ Token *parse_input(char *ptr)
 		if ((ptr[i] == ' ' && !parsing && !marks) ||
 			(i == strlen(ptr) - 1))
 		{	
-			parsing = 1;
+			parsing = true;
 			/**
 			 * Several possibilities, in order:
 			 * 	1. This is the last argument of the command line
@@ -427,12 +447,12 @@ Token *parse_input(char *ptr)
 		// Enter a double quotation mark input
 		else if (ptr[i] == '"' && !marks)
 		{
-			marks = 1;
+			marks = true;
 		}
 		// Exit a double quotation mark input
 		else if (ptr[i] == '"' && marks)
 		{
-			marks = 0;
+			marks = false;
 		}
 		else
 		{
@@ -441,7 +461,7 @@ Token *parse_input(char *ptr)
 			{
 				buffer[index_buffer] = ptr[i];
 				index_buffer++;
-				parsing = 0;
+				parsing = false;
 			}
 		}
 	}
@@ -489,19 +509,19 @@ void free_tokens(Token *head)
 }
 
 
-int is_option(char *arg)
+bool is_option(char *arg)
 {
 	if (arg == NULL)
 	{
 		printf("Error: is_option(): Null pointer\n");
-		return 0;
+		return false;
 	}
 
 	if (arg[0] == '-' && strlen(arg) > 1)
 	{
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 
@@ -551,7 +571,7 @@ void touch(Token *head, int argc)
 
 void rm(Token *head, int argc)
 {
-	int confirmation = 0, directory = 0, remove_all = 0;
+	bool confirmation = false, directory = false, remove_all = false;
 
 	if (argc < 2)
 	{
@@ -569,13 +589,13 @@ void rm(Token *head, int argc)
 				switch (argument[j])
 				{
 					case 'i':
-						confirmation = 1;
+						confirmation = true;
 						break;
 					case 'd':
-						directory = 1;
+						directory = true;
 						break;
 					case 'r':
-						remove_all = 1;
+						remove_all = true;
 						break;
 					default:
 						printf("Error: '%s': Invalid option\n", argument);
@@ -644,7 +664,6 @@ void rm(Token *head, int argc)
 			}
 		}
 	}
-	return;
 }
 
 
@@ -655,6 +674,7 @@ void rmdir_cli(Token *head, int argc)
 		printf("Error: rmdir: Missing operand\n");
 		return;
 	}
+	// Remove folders given as argument
 	for (int i = 1; i < argc; i++)
 	{
 		char path[PATH_MAX] = {0};
@@ -667,6 +687,40 @@ void rmdir_cli(Token *head, int argc)
 			return;
 		}
 	}
-	return;
+}
+
+
+void cat(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: cat: Missing operand\n");
+		return;
+	}
+
+	for (int i = 1; i < argc; i++)
+	{
+		char *argument = get_argv(head, i);
+
+		FILE *file = fopen(argument, "r");
+		if (file == NULL)
+		{
+			printf("Error: cat: Could not open %s\n", argument);
+			return;
+		}
+
+		char character = '\0';
+		while((character = fgetc(file)) != EOF)
+		{
+			if (putchar(character) == EOF)
+			{
+				printf("Error: cat: Could not write to standard output\n");
+				fclose(file);
+				return;
+			}
+		}
+		putchar('\n');
+		fclose(file);
+	}
 }
 
