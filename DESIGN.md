@@ -54,8 +54,8 @@ Development of a simple bash-like command-line interface in C. The purpose of th
 2. ~~Test, commit and push.~~
 3. ~~Create the interface for the CLI. First within bash itself, later on in a separate window. Issue a statement at the launch of the interface to tell how to exit it. If necessary, create the function to exit the interface. Include error handling.~~
 4. ~~Test, commit and push.~~
-5. Complete user need A. Learning how to interact with the operating system will be mandatory (system calls). 
-6. Test functions A1 and A2. Commit and push.
+5. ~~Complete user need A. Learning how to interact with the operating system will be mandatory (system calls).~~
+6. ~~Test functions A1 and A2. Commit and push.~~
 7. Complete user need B. 
 8. Test functions B1 to B3. Commit and push.
 9. Complete user need C.

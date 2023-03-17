@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/dir.h>
+#include <sys/types.h>
 
 // Maximum number of characters allowed for a single command line 
 #define SIZE_INPUT 100
@@ -167,6 +169,23 @@ void echo(Token *head, int argc);
 void pwd();
 
 /**
+ * void ls(Token *head, int argc)
+ * @brief Print the content of the working directory.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function touch() accepts a pointer @p head and an integer 
+ * @p argc as input. It displays the content of the current
+ * working directory. By default, it does not show hidden files.
+ * The function allows the input of 2 options:
+ * 		-a: Enables the display of hidden files.
+ * 		-l: Enables the display of extra data.
+*/
+void ls(Token *head, int argc);
+
+/**
  * void touch(Token *head, int argc)
  * @brief Create one or multiple files.
  * 
@@ -203,8 +222,23 @@ void touch(Token *head, int argc);
 void rm(Token *head, int argc);
 
 /**
+ * void mkdir_cli(Token *head, int argc)
+ * @brief Create an empty folder.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function mkdir_cli() accepts a pointer @p head and 
+ * an integer @p argc as input. It creates an empty folder
+ * from the current directory. An error message is instead
+ * displayed on stderr if the folder cannot be created.
+*/
+void mkdir_cli(Token *head, int argc);
+
+/**
  * void rmdir_cli(Token *head, int argc)
- * @brief Remove empty folders.
+ * @brief Remove an empty folder.
  * 
  * @param[in] head	Memory area where the parsed data is.
  * @param[in] argc	Number of arguments.
@@ -233,7 +267,6 @@ void rmdir_cli(Token *head, int argc);
  * found or open.
 */
 void cat(Token *head, int argc);
-
 
 
 int main(void)
@@ -281,7 +314,7 @@ int main(void)
 			}
 			else if (!strcmp(command, "ls"))
 			{
-				// ls();
+				ls(head, argc);
 			}
 			else if (!strcmp(command, "cd"))
 			{
@@ -297,7 +330,7 @@ int main(void)
 			}
 			else if (!strcmp(command, "mkdir"))
 			{
-				// mkdir();
+				mkdir_cli(head, argc);
 			}
 			else if (!strcmp(command, "rmdir"))
 			{
@@ -548,6 +581,83 @@ void pwd()
 }
 
 
+void ls(Token *head, int argc)
+{
+	bool invisible = false, details = false, flag = false;
+
+	for (int i = 1; i < argc; i++)
+	{
+		char *argument = get_argv(head, i);
+		if (is_option(argument))
+		{
+			for (int j = 1; j < strlen(argument); j++)
+			{
+				switch (argument[j])
+				{
+					case 'l':
+						details = true;
+						break;
+					case 'a':
+						invisible = true;
+						break;
+				}
+			}
+		}
+		
+	}
+
+	DIR *dir = opendir("./");
+	if (dir == NULL)
+	{
+		printf("Error: ls: Cannot open directory\n");
+		return;
+	}
+
+	struct dirent *entry = readdir(dir);
+	if (entry == NULL)
+	{
+		printf("Error: ls: Cannot read directory\n");
+		return;
+	}
+
+	struct stat buf;
+	while (entry != NULL)
+	{
+		if (!invisible && (entry->d_name)[0] == '.')
+		{
+			entry = readdir(dir);
+			continue;
+		}
+
+		if (details)
+		{
+			// Flag to display header once only
+			if (!flag)
+			{
+				printf("mode\t\tsize\tname\n");
+				flag = true;
+			}
+			/// @note More information can be displayed
+			stat(entry->d_name, &buf);
+			printf("%c%c%c%c%c%c%c%c%c\t",
+				(S_ISDIR(buf.st_mode)) ? 'd' : '-',
+				(buf.st_mode & S_IRUSR) ? 'r' : '-',
+				(buf.st_mode & S_IWUSR) ? 'w' : '-',
+				(buf.st_mode & S_IXUSR) ? 'x' : '-',
+				(buf.st_mode & S_IRGRP) ? 'r' : '-',
+				(buf.st_mode & S_IWGRP) ? 'w' : '-',
+				(buf.st_mode & S_IXGRP) ? 'x' : '-',
+				(buf.st_mode & S_IROTH) ? 'r' : '-',
+				(buf.st_mode & S_IWOTH) ? 'w' : '-');
+			printf("%li\t", buf.st_size);
+		}
+		printf("%s\n", entry->d_name);
+		entry = readdir(dir);
+    }
+	closedir(dir);
+}
+
+
 void touch(Token *head, int argc)
 {
 	if (argc < 2)
@@ -667,6 +777,29 @@ void rm(Token *head, int argc)
 }
 
 
+void mkdir_cli(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: mkdir: Missing operand\n");
+		return;
+	}
+	// Create folders given as argument
+	for (int i = 1; i < argc; i++)
+	{
+		char path[PATH_MAX] = {0};
+		char *argument = get_argv(head, i);
+		snprintf(path, sizeof(path), "./%s", argument);
+		if (mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1)
+		{
+			fprintf(stderr, "Error: mkdir: Failed to create '%s': ", argument);
+			perror("");
+			return;
+		}
+	}
+}
+
+
 void rmdir_cli(Token *head, int argc)
 {
 	if (argc < 2)
@@ -682,7 +815,7 @@ void rmdir_cli(Token *head, int argc)
 		snprintf(path, sizeof(path), "./%s", argument);
 		if (rmdir(path) == -1)
 		{
-			fprintf(stderr, "Error: Failed to remove '%s': ", argument);
+			fprintf(stderr, "Error: rmdir: Failed to remove '%s': ", argument);
 			perror("");
 			return;
 		}
@@ -709,6 +842,7 @@ void cat(Token *head, int argc)
 			return;
 		}
 
+		// Transfer data from stream to stdout
 		char character = '\0';
 		while((character = fgetc(file)) != EOF)
 		{
