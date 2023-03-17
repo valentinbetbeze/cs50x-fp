@@ -51,7 +51,7 @@ typedef struct token
  * @retval			0 on success.
  * 					1 on failure.
  * 
- * The function `get_input()` accepts a pointer @p ptr as input
+ * The function 'get_input()' accepts a pointer @p ptr as input
  * and returns an integer indicating success or failure. If the
  * input command is too long, the function will print an error
  * message and return 1.
@@ -64,7 +64,7 @@ int get_input(char *ptr);
  * 
  * @param[in] ptr	Memory area with the data to be parsed.
  * @return			A pointer to the head of a linked list.
- * @retval			`Token` pointer on success.
+ * @retval			'Token' pointer on success.
  * 					NULL pointer on failure.
  * 
  * The function parse_input() accepts a pointer @p ptr as input and
@@ -122,7 +122,19 @@ char *get_argv(Token *head, int index);
 */
 void free_tokens(Token *head);
 
-// todo write description
+/**
+ * int is_option(char *arg)
+ * @brief Check if the argument is an option.
+ * 
+ * @param[in] arg	Pointer to an array of characters.
+ * @return			An integer stating the outcome of the function.
+ * @retval			1 if the argument is an option.
+ * 					0 if not.
+ * 
+ * The function is_option() accepts a character pointer @p arg as
+ * input. It checks whether the argument is an option or not, by
+ * looking for an hyphen at the beginning of the given string.
+*/
 int is_option(char *arg);
 
 /**
@@ -140,16 +152,69 @@ int is_option(char *arg);
 */
 void echo(Token *head, int argc);
 
-// todo write description
+/**
+ * void pwd(void)
+ * @brief Print the current working directory.
+ * 
+ * @return			Nothing.
+ * 
+ * The function pwd() takes no input parameter and returns no
+ * output. It displays the path of the current working directory
+ * on stdout . If the path length is larger than PATH_MAX, an
+ * error message is displayed instead if the path length.
+*/
 void pwd();
 
-// todo write description
+/**
+ * void touch(Token *head, int argc)
+ * @brief Create one or multiple files.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function touch() accepts a pointer @p head and an integer 
+ * @p argc as input. It creates as many files as given arguments
+ * in the current working directory. The function also sets the 
+ * file(s) as read and write for 'user', and read only for
+ * 'group' and 'others'.
+*/
 void touch(Token *head, int argc);
 
-// todo write description
+/**
+ * void rm(Token *head, int argc)
+ * @brief Remove files or folders.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function rm() accepts a pointer @p head and an integer 
+ * @p argc as input. By default, it removes file(s) from the 
+ * directory structure without confirmation prompt. It also
+ * accepts different options as input:
+ * 		-d: Enables the deletion of empty directories.
+ * 		-i: Enables a confirmation prompt before deletion.
+ * An error message is instead displayed on stderr if the file
+ * or folder does not exist.
+ * @todo update with -r once implemented.
+*/
 void rm(Token *head, int argc);
 
-
+/**
+ * void rmdir_cli(Token *head, int argc)
+ * @brief Remove empty folders.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function rmdir_cli() accepts a pointer @p head and 
+ * an integer @p argc as input. It removes empty-only folders
+ * from the current directory. An error message is instead
+ * displayed on stderr if the given folder does not exist or
+ * is not empty.
+*/
 void rmdir_cli(Token *head, int argc);
 
 
