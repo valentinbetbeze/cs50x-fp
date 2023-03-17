@@ -298,6 +298,7 @@ int main(void)
 
 			int argc = get_argc(head);
 			char *command = get_argv(head, 0);
+
 			/**
 			 * @note To improve if more commands are added.
 			 * Search time: poor (linear).
@@ -363,6 +364,7 @@ bool get_input(char *ptr)
 	int index = 0;
 	memset(ptr, 0, SIZE_INPUT);
 
+	// Fetch input
     while ((character = getchar()) != '\n')
     {
 		// The input is too long
@@ -377,19 +379,37 @@ bool get_input(char *ptr)
 		ptr[index] = character;
 		index++;
     }
+	int len = strlen(ptr);
+
 	// If no input
-	if (!strlen(ptr))
+	if (!len)
 	{
 		return false;
 	}
-	// Remove whitespaces (if any)
-	for (int i = 0; i < strlen(ptr); i ++)
+
+	/**
+	 * Input post-process.
+	 * 1st 'for' loop: Getting first character position
+	 * 2nd 'for' loop: Sorting all characters to the left of the array
+	 * 3rd 'for' loop: Removing trailing whitespaces
+	*/
+	int start_index = 0;
+	for (int i = 0; i < len; i++)
 	{
 		if (ptr[i] != ' ') 
 		{
+			start_index = i;
 			break;
 		}
-		ptr[i] = '\0';
+	}
+	for (int i = start_index; i < len + start_index; i++)
+	{
+		if (i > len + 1)
+		{
+			ptr[i - start_index] = ' ';
+			continue;
+		}
+		ptr[i - start_index] = ptr[i];
 	}
 	for (int i = strlen(ptr) - 1; i >= 0; i--)
 	{
