@@ -20,10 +20,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 // Maximum number of characters allowed for a single command line 
 #define SIZE_INPUT 100
-
+#define PATH_MAX 4096
 
 /**
  * @brief @struct type to store parsed arguments within a linked list.
@@ -119,6 +122,9 @@ char *get_argv(Token *head, int index);
 */
 void free_tokens(Token *head);
 
+// todo write description
+int is_option(char *arg);
+
 /**
  * void echo(Token *head, int argc)
  * @brief Display the argument(s) given as input.
@@ -134,6 +140,18 @@ void free_tokens(Token *head);
 */
 void echo(Token *head, int argc);
 
+// todo write description
+void pwd();
+
+// todo write description
+void touch(Token *head, int argc);
+
+// todo write description
+void rm(Token *head, int argc);
+
+
+void rmdir_cli(Token *head, int argc);
+
 
 int main(void)
 {
@@ -143,7 +161,7 @@ int main(void)
 	char *input = malloc(SIZE_INPUT);
 	if (input == NULL)
 	{
-		printf("Error: 'input' memory allocation failed.\n");
+		printf("Error: 'input' memory allocation failed\n");
 		return 1;
 	}
 
@@ -158,7 +176,7 @@ int main(void)
 			Token *head = parse_input(input);
 			if (head == NULL)
 			{
-				printf("Error: Parsing failed.\n");
+				printf("Error: Parsing failed\n");
 				continue;
 			}
 
@@ -176,43 +194,43 @@ int main(void)
 			}
 			else if (!strcmp(command, "pwd"))
 			{
-				/// @todo statement
+				pwd();
 			}
 			else if (!strcmp(command, "ls"))
 			{
-				/// @todo statement
+				// todo statement
 			}
 			else if (!strcmp(command, "cd"))
 			{
-				/// @todo statement
+				// todo statement
 			}
 			else if (!strcmp(command, "touch"))
 			{
-				/// @todo statement
+				touch(head, argc);
 			}
 			else if (!strcmp(command, "rm"))
 			{
-				/// @todo statement
+				rm(head, argc);
 			}
 			else if (!strcmp(command, "mkdir"))
 			{
-				/// @todo statement
+				// todo statement
 			}
 			else if (!strcmp(command, "rmdir"))
 			{
-				/// @todo statement
+				rmdir_cli(head, argc);
 			}
 			else if (!strcmp(command, "mv"))
 			{
-				/// @todo statement
+				// todo statement
 			}
 			else if (!strcmp(command, "cat"))
 			{
-				/// @todo statement
+				// todo statement
 			}
 			else if (strcmp(command, "exit"))
 			{
-				printf("Error: %s: unknown command\n", command);
+				printf("Error: %s: Unknown command\n", command);
 			}
 			free_tokens(head);
 		}
@@ -270,13 +288,13 @@ int get_input(char *ptr)
 
 Token *parse_input(char *ptr)
 {
-	int marks = 0, index_buffer = 0;
+	int marks = 0, parsing = 0, index_buffer = 0;
 
 	// This buffer will be used during parsing
 	char *buffer = calloc(SIZE_INPUT, sizeof(char));
 	if (buffer == NULL)
 	{
-		printf("Error: 'buffer' memory allocation failed.\n");
+		printf("Error: parse_input(): Buffer memory allocation failed\n");
 		return NULL;
 	}
 
@@ -284,23 +302,35 @@ Token *parse_input(char *ptr)
 	Token *head = calloc(1, sizeof(Token));
 	if (head == NULL)
 	{
-		printf("Error: 'head' token creation failed.\n");
+		printf("Error: parse_input(): 'head' token creation failed\n");
 		return NULL;
 	}
 
 	// Parsing loop
 	for (int i = 0; i < strlen(ptr); i++)
 	{
-		// Argument found
-		if ((ptr[i] == ' ' && !marks) || (i == strlen(ptr) - 1))
+		/**
+		 * If we have a space, if we were not parsing, and if we're
+		 * not within quotation marks: argument found.
+		*/
+		if ((ptr[i] == ' ' && !parsing && !marks) ||
+			(i == strlen(ptr) - 1))
 		{	
-			// Include character if it is the last argument of the command
+			parsing = 1;
+			/**
+			 * Several possibilities, in order:
+			 * 	1. This is the last argument of the command line
+			 * 	2. This is the first argument of the command line
+			 * 	3. Nor the first, nor the last argument.
+			*/
 			if ((i == strlen(ptr) - 1) && ptr[i] != '"')
 			{
 				buffer[index_buffer] = ptr[i];
 			}
-
-			// Add the first parsed argument to the head of the linked list
+			/**
+			 * No 'else if' here, as an argument can be both the 
+			 * first and last of the command line.
+			*/
 			if (head->argument[0] == '\0')
 			{
 				strcpy(head->argument, buffer);
@@ -311,7 +341,7 @@ Token *parse_input(char *ptr)
 				Token *new = calloc(1, sizeof(Token));
 				if (new == NULL)
 				{
-					printf("Error: 'new' token creation failed.\n");
+					printf("Error: parse_input(): 'new' token creation failed\n");
 					return NULL;
 				}
 				strcpy(new->argument, buffer);
@@ -341,8 +371,13 @@ Token *parse_input(char *ptr)
 		}
 		else
 		{
-			buffer[index_buffer] = ptr[i];
-			index_buffer++;
+			// Ignore spaces except if within double quotation marks
+			if (ptr[i] != ' ' || marks)
+			{
+				buffer[index_buffer] = ptr[i];
+				index_buffer++;
+				parsing = 0;
+			}
 		}
 	}
 	free(buffer);
@@ -368,7 +403,7 @@ char *get_argv(Token *head, int index)
 	{
 		if (head->next == NULL)
 		{
-			printf("Error: index out of range.\n");
+			printf("Error: get_argv(): index out of range\n");
 			return 0;
 		}
 		head = head->next;
@@ -389,6 +424,22 @@ void free_tokens(Token *head)
 }
 
 
+int is_option(char *arg)
+{
+	if (arg == NULL)
+	{
+		printf("Error: is_option(): Null pointer\n");
+		return 0;
+	}
+
+	if (arg[0] == '-' && strlen(arg) > 1)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+
 void echo(Token *head, int argc)
 {
 	for (int i = 1; i < argc; i++)
@@ -397,3 +448,160 @@ void echo(Token *head, int argc)
 	}
 	printf("\n");
 }
+
+
+void pwd()
+{
+	char buf[PATH_MAX] = {0};
+	// https://man7.org/linux/man-pages/man3/getcwd.3.html
+	if (!getcwd(buf, PATH_MAX))
+	{
+		perror("Error: pwd: getcwd()");
+		return;
+	}
+	printf("%s\n", buf);
+}
+
+
+void touch(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: touch: Missing operand\n");
+		return;
+	}
+	for (int i = 1; i < argc; i++)
+	{
+		/**
+		 * Set default rights to:
+		 * 	user read:		on
+		 * 	user write:		on
+		 * 	group read:		on
+		 * 	others read:	on
+		*/
+		creat(get_argv(head, i), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	}
+}
+
+
+void rm(Token *head, int argc)
+{
+	int confirmation = 0, directory = 0, remove_all = 0;
+
+	if (argc < 2)
+	{
+		printf("Error: rm: Missing operand\n");
+		return;
+	}
+	// Check options
+	for (int i = 1; i < argc; i++)
+	{
+		char *argument = get_argv(head, i);
+		if (is_option(argument))
+		{
+			for (int j = 1; j < strlen(argument); j++)
+			{
+				switch (argument[j])
+				{
+					case 'i':
+						confirmation = 1;
+						break;
+					case 'd':
+						directory = 1;
+						break;
+					case 'r':
+						remove_all = 1;
+						break;
+					default:
+						printf("Error: '%s': Invalid option\n", argument);
+						return;
+				}
+			}
+		}
+	}
+
+	if (confirmation)
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			char *argument = get_argv(head, i);
+			if (!is_option(argument))
+			{
+				if (directory)
+				{
+					printf("Warning: Remove folder\t'%s'?\n", argument);
+				}
+				else
+				{
+					printf("Warning: Remove file\t'%s'?\n", argument);
+				}
+			}
+		}
+		printf("->[y/N] ");
+		// Wait for confirmation
+		if (getchar() != 'y')
+		{
+			return;
+		}
+	}
+
+	if (remove_all)
+	{
+		// Recursively remove all files and subdirectories
+		// todo
+		// need ls, getcwd
+		return;
+	}
+
+	for (int i = 1; i < argc; i++)
+	{
+		char *argument = get_argv(head, i);
+		if (!is_option(argument))
+		{
+			if (directory)
+			{
+				char path[PATH_MAX] = {0};
+				snprintf(path, sizeof(path), "./%s", argument);
+				// Remove folder
+				if (rmdir(path) == -1)
+				{
+					fprintf(stderr, "Error: Failed to remove '%s': ", argument);
+					perror("");
+					return;
+				}
+			}
+			// Remove file
+			else if (unlink(argument) == -1)
+			{
+				fprintf(stderr, "Error: Failed to remove '%s': ", argument);
+				perror("");
+				return;
+			}
+		}
+	}
+	return;
+}
+
+
+void rmdir_cli(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: rmdir: Missing operand\n");
+		return;
+	}
+	for (int i = 1; i < argc; i++)
+	{
+		char path[PATH_MAX] = {0};
+		char *argument = get_argv(head, i);
+		snprintf(path, sizeof(path), "./%s", argument);
+		if (rmdir(path) == -1)
+		{
+			fprintf(stderr, "Error: Failed to remove '%s': ", argument);
+			perror("");
+			return;
+		}
+	}
+	return;
+}
+

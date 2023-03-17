@@ -1,0 +1,24 @@
+'https://plantuml.com/activity-diagram-beta
+
+@startuml flowchart_cli
+start
+while (input != 'exit'?)
+	->yes;
+	if (valid input?) then (yes)
+		: parse input;
+		: get number\n of arguments;
+		: get command;
+		note right
+			The command is the first
+			argument of the command
+			line (index 0)
+		end note
+		: execute command;
+		: free memory from parsing;
+	else (no)
+	endif
+endwhile
+-> no;
+: free memory;
+end
+@enduml
