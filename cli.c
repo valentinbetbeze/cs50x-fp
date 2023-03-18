@@ -218,6 +218,21 @@ void cd(Token *head, int argc);
 */
 void touch(Token *head, int argc);
 
+
+/**
+ * void recursive_deletion(char *path)
+ * @brief Delete the folder as well as all of its content.
+ * 
+ * @param[in] path	Path to the folder to remove
+ * @return			Nothing.
+ * 
+ * The function recursive_deletion() accepts a character pointer
+ * @p path as input. It recursively deletes a folder and all of
+ * its content. The function does not have any confirmation prompt 
+ * mechanism. Use carefully.
+*/
+void recursive_deletion(char *path);
+
 /**
  * void rm(Token *head, int argc)
  * @brief Remove files or folders.
@@ -232,9 +247,9 @@ void touch(Token *head, int argc);
  * accepts different options as input:
  * 		-d: Enables the deletion of empty directories.
  * 		-i: Enables a confirmation prompt before deletion.
+ * 		-r: Enables to deletion of a folder and its content.
  * An error message is instead displayed on stderr if the file
  * or folder does not exist.
- * @todo update with -r once implemented.
 */
 void rm(Token *head, int argc);
 
@@ -627,7 +642,7 @@ void pwd()
 	// https://man7.org/linux/man-pages/man3/getcwd.3.html
 	if (!getcwd(curdir, PATH_MAX))
 	{
-		perror("Error: pwd: getcwd()");
+		perror("Error: getcwd()");
 		return;
 	}
 	printf("%s\n", curdir);
@@ -656,20 +671,19 @@ void ls(Token *head, int argc)
 				}
 			}
 		}
-		
 	}
 
 	DIR *dir = opendir("./");
 	if (dir == NULL)
 	{
-		printf("Error: ls: Cannot open directory\n");
+		printf("Error: Cannot open directory\n");
 		return;
 	}
 
 	struct dirent *entry = readdir(dir);
 	if (entry == NULL)
 	{
-		printf("Error: ls: Cannot read directory\n");
+		printf("Error: Cannot read directory\n");
 		return;
 	}
 
@@ -715,12 +729,12 @@ void cd(Token *head, int argc)
 {
 	if (argc < 2)
 	{
-		printf("Error: cd: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	else if (argc > 2)
 	{
-		printf("Error: cd: Too many arguments\n");
+		printf("Error: Too many arguments\n");
 		return;
 	}
 
@@ -731,7 +745,7 @@ void cd(Token *head, int argc)
 	{
 		if (chdir(path))
 		{
-			perror("Error: cd: chdir()");
+			perror("Error: chdir()");
 			return;
 		}
 	}
@@ -741,7 +755,7 @@ void cd(Token *head, int argc)
 		snprintf(new_path, sizeof(new_path), "./%s", path);
 		if (chdir(new_path))
 		{
-			fprintf(stderr, "Error: cd: %s: ", path);
+			fprintf(stderr, "Error: %s: ", path);
 			perror("");
 			return;
 		}
@@ -753,7 +767,7 @@ void touch(Token *head, int argc)
 {
 	if (argc < 2)
 	{
-		printf("Error: touch: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	for (int i = 1; i < argc; i++)
@@ -770,13 +784,67 @@ void touch(Token *head, int argc)
 }
 
 
+void recursive_deletion(char *path)
+{
+	DIR *dir = opendir(path);
+	if (dir == NULL)
+	{
+		printf("Error: Cannot open directory: %s\n", path);
+		return;
+	}
+
+	struct dirent *entry = readdir(dir);
+	if (entry == NULL)
+	{
+		printf("Error: Cannot read directory\n");
+		return;
+	}
+
+	// For each element of the top folder
+	struct stat buf;
+	while (entry != NULL)
+	{
+		/* Concatenate the path with the file name to have the full path of the file/folder */ 
+		char new_path[PATH_MAX];
+		snprintf(new_path, PATH_MAX, "%s/%s", path, entry->d_name);
+		stat(new_path, &buf);
+		// If the element is a directory, except the system-specific directories '.' and '..'
+		if (S_ISDIR(buf.st_mode)
+			&& strcmp(entry->d_name, ".")
+			&& strcmp(entry->d_name, ".."))
+		{
+			// Delete by recursion
+			recursive_deletion(new_path);
+		}
+		else if (!S_ISDIR(buf.st_mode))
+		{
+			if (unlink(new_path) == -1)
+			{
+				fprintf(stderr, "Error: Failed to remove '%s': ", entry->d_name);
+				perror("");
+				return;
+			}
+		}
+		entry = readdir(dir);
+    }
+
+	// Finally, delete the top directory
+	closedir(dir);
+	if (rmdir(path) == -1)
+	{
+		perror("");
+		return;
+	}
+}
+
+
 void rm(Token *head, int argc)
 {
 	bool confirmation = false, directory = false, remove_all = false;
 
 	if (argc < 2)
 	{
-		printf("Error: rm: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	// Check options
@@ -813,14 +881,7 @@ void rm(Token *head, int argc)
 			char *argument = get_argv(head, i);
 			if (!is_option(argument))
 			{
-				if (directory)
-				{
-					printf("Warning: Remove folder\t'%s'?\n", argument);
-				}
-				else
-				{
-					printf("Warning: Remove file\t'%s'?\n", argument);
-				}
+				printf("Warning: Remove \t'%s'?\n", argument);
 			}
 		}
 		printf("->[y/N] ");
@@ -831,33 +892,32 @@ void rm(Token *head, int argc)
 		}
 	}
 
-	if (remove_all)
-	{
-		// Recursively remove all files and subdirectories
-		// todo
-		// need ls, getcwd
-		return;
-	}
-
 	for (int i = 1; i < argc; i++)
 	{
 		char *argument = get_argv(head, i);
 		if (!is_option(argument))
 		{
+			char path[PATH_MAX] = {0};
+			snprintf(path, sizeof(path), "./%s", argument);
+
+			if (remove_all)
+			{
+				recursive_deletion(path);
+				continue;
+			}
+
 			if (directory)
 			{
-				char path[PATH_MAX] = {0};
-				snprintf(path, sizeof(path), "./%s", argument);
-				// Remove folder
 				if (rmdir(path) == -1)
 				{
 					fprintf(stderr, "Error: Failed to remove '%s': ", argument);
 					perror("");
 					return;
 				}
+				continue;
 			}
-			// Remove file
-			else if (unlink(argument) == -1)
+
+			if (unlink(argument) == -1)
 			{
 				fprintf(stderr, "Error: Failed to remove '%s': ", argument);
 				perror("");
@@ -872,7 +932,7 @@ void mkdir_cli(Token *head, int argc)
 {
 	if (argc < 2)
 	{
-		printf("Error: mkdir: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	// Create folders given as argument
@@ -883,7 +943,7 @@ void mkdir_cli(Token *head, int argc)
 		snprintf(path, sizeof(path), "./%s", argument);
 		if (mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH) == -1)
 		{
-			fprintf(stderr, "Error: mkdir: Failed to create '%s': ", argument);
+			fprintf(stderr, "Error: Failed to create '%s': ", argument);
 			perror("");
 			return;
 		}
@@ -895,7 +955,7 @@ void rmdir_cli(Token *head, int argc)
 {
 	if (argc < 2)
 	{
-		printf("Error: rmdir: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	// Remove folders given as argument
@@ -906,7 +966,7 @@ void rmdir_cli(Token *head, int argc)
 		snprintf(path, sizeof(path), "./%s", argument);
 		if (rmdir(path) == -1)
 		{
-			fprintf(stderr, "Error: rmdir: Failed to remove '%s': ", argument);
+			fprintf(stderr, "Error: Failed to remove '%s': ", argument);
 			perror("");
 			return;
 		}
@@ -918,12 +978,12 @@ void mv(Token *head, int argc)
 {
 	if (argc < 3)
 	{
-		printf("Error: mv: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 	else if (argc > 3)
 	{
-		printf("Error: mv: Too many arguments\n");
+		printf("Error: Too many arguments\n");
 		return;
 	}
 	
@@ -932,7 +992,7 @@ void mv(Token *head, int argc)
 
 	if(rename(old_name, new_name))
 	{
-		fprintf(stderr, "Error: mv: '%s': ", old_name);
+		fprintf(stderr, "Error: '%s': ", old_name);
 		perror("");
 		return;
 	}
@@ -943,7 +1003,7 @@ void cat(Token *head, int argc)
 {
 	if (argc < 2)
 	{
-		printf("Error: cat: Missing operand\n");
+		printf("Error: Missing operand\n");
 		return;
 	}
 
@@ -954,7 +1014,7 @@ void cat(Token *head, int argc)
 		FILE *file = fopen(argument, "r");
 		if (file == NULL)
 		{
-			printf("Error: cat: Could not open %s\n", argument);
+			printf("Error: Could not open %s\n", argument);
 			return;
 		}
 
@@ -964,7 +1024,7 @@ void cat(Token *head, int argc)
 		{
 			if (putchar(character) == EOF)
 			{
-				printf("Error: cat: Could not write to standard output\n");
+				printf("Error: Could not write to standard output\n");
 				fclose(file);
 				return;
 			}
