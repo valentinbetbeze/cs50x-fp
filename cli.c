@@ -186,6 +186,23 @@ void pwd();
 void ls(Token *head, int argc);
 
 /**
+ * void cd(Token *head, int argc)
+ * @brief Change the current working directory.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function cd() accepts a pointer @p head and an integer 
+ * @p argc as input. It changes the current working directory
+ * to the one embedded in the second token. Both absolute and
+ * relative path can be given. An error message is displayed
+ * if the desired working directory does not exist or is
+ * unreachable. 
+*/
+void cd(Token *head, int argc);
+
+/**
  * void touch(Token *head, int argc)
  * @brief Create one or multiple files.
  * 
@@ -319,7 +336,7 @@ int main(void)
 			}
 			else if (!strcmp(command, "cd"))
 			{
-				// cd();
+				cd(head, argc);
 			}
 			else if (!strcmp(command, "touch"))
 			{
@@ -590,14 +607,14 @@ void echo(Token *head, int argc)
 
 void pwd()
 {
-	char buf[PATH_MAX] = {0};
+	char curdir[PATH_MAX] = {0};
 	// https://man7.org/linux/man-pages/man3/getcwd.3.html
-	if (!getcwd(buf, PATH_MAX))
+	if (!getcwd(curdir, PATH_MAX))
 	{
 		perror("Error: pwd: getcwd()");
 		return;
 	}
-	printf("%s\n", buf);
+	printf("%s\n", curdir);
 }
 
 
@@ -657,7 +674,7 @@ void ls(Token *head, int argc)
 				printf("mode\t\tsize\tname\n");
 				flag = true;
 			}
-			/// @note More information can be displayed
+			/// @note More information could be displayed
 			stat(entry->d_name, &buf);
 			printf("%c%c%c%c%c%c%c%c%c\t",
 				(S_ISDIR(buf.st_mode)) ? 'd' : '-',
@@ -675,6 +692,44 @@ void ls(Token *head, int argc)
 		entry = readdir(dir);
     }
 	closedir(dir);
+}
+
+
+void cd(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: cd: Missing operand\n");
+		return;
+	}
+	else if (argc > 2)
+	{
+		printf("Error: cd: Too many arguments\n");
+		return;
+	}
+
+	char *path = get_argv(head, 1);
+
+	// If an absolute path is given
+	if (path[0] == '/')
+	{
+		if (chdir(path))
+		{
+			perror("Error: cd: chdir()");
+			return;
+		}
+	}
+	else
+	{
+		char new_path[PATH_MAX] = {0};
+		snprintf(new_path, sizeof(new_path), "./%s", path);
+		if (chdir(new_path))
+		{
+			fprintf(stderr, "Error: cd: %s: ", path);
+			perror("");
+			return;
+		}
+	}
 }
 
 
@@ -810,7 +865,7 @@ void mkdir_cli(Token *head, int argc)
 		char path[PATH_MAX] = {0};
 		char *argument = get_argv(head, i);
 		snprintf(path, sizeof(path), "./%s", argument);
-		if (mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1)
+		if (mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) == -1)
 		{
 			fprintf(stderr, "Error: mkdir: Failed to create '%s': ", argument);
 			perror("");
