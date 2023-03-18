@@ -270,6 +270,22 @@ void mkdir_cli(Token *head, int argc);
 void rmdir_cli(Token *head, int argc);
 
 /**
+ * void mv(Token *head, int argc)
+ * @brief Rename a file or change its location.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function mv() accepts a pointer @p head and an integer
+ * @p argc as input. It will either rename or move the 
+ * location of a file depending on the arguments found in the
+ * linked list. mv() makes use of the function rename() from
+ * <stdio.h> to execute the command and ensure error handling.
+*/
+void mv(Token *head, int argc);
+
+/**
  * void cat(Token *head, int argc)
  * @brief Display the content of a file.
  * 
@@ -356,7 +372,7 @@ int main(void)
 			}
 			else if (!strcmp(command, "mv"))
 			{
-				// mv();
+				mv(head, argc);
 			}
 			else if (!strcmp(command, "cat"))
 			{
@@ -749,7 +765,7 @@ void touch(Token *head, int argc)
 		 * 	group read:		on
 		 * 	others read:	on
 		*/
-		creat(get_argv(head, i), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		creat(get_argv(head, i), S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH);
 	}
 }
 
@@ -865,7 +881,7 @@ void mkdir_cli(Token *head, int argc)
 		char path[PATH_MAX] = {0};
 		char *argument = get_argv(head, i);
 		snprintf(path, sizeof(path), "./%s", argument);
-		if (mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) == -1)
+		if (mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH) == -1)
 		{
 			fprintf(stderr, "Error: mkdir: Failed to create '%s': ", argument);
 			perror("");
@@ -894,6 +910,31 @@ void rmdir_cli(Token *head, int argc)
 			perror("");
 			return;
 		}
+	}
+}
+
+
+void mv(Token *head, int argc)
+{
+	if (argc < 3)
+	{
+		printf("Error: mv: Missing operand\n");
+		return;
+	}
+	else if (argc > 3)
+	{
+		printf("Error: mv: Too many arguments\n");
+		return;
+	}
+	
+	char *old_name = get_argv(head, 1);
+	char *new_name = get_argv(head, 2);
+
+	if(rename(old_name, new_name))
+	{
+		fprintf(stderr, "Error: mv: '%s': ", old_name);
+		perror("");
+		return;
 	}
 }
 
