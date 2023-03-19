@@ -123,7 +123,7 @@ void free_tokens(Token *head);
  * input. It checks whether the argument is an option or not, by
  * looking for an hyphen at the beginning of the given string.
 */
-bool is_option(char *arg);
+bool is_option(const char *arg);
 
 
 /**
@@ -139,7 +139,7 @@ bool is_option(char *arg);
  * its content. The function does not have any confirmation prompt 
  * mechanism. Use carefully.
 */
-void recursive_deletion(char *path);
+void recursive_deletion(const char *path);
 
 
 #endif // UTILS_H

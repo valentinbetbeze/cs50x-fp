@@ -59,11 +59,11 @@ Development of a simple bash-like command-line interface in C. The purpose of th
 8. ~~Test functions B1 to B3. Commit and push.~~
 9. ~~Complete user need C.~~
 10. ~~Test functions C1 to C4. Commit and push.~~
-11. Learn about how to compile a .c file. Learn about GCC and Makefiles.
-12. Complete user need D.
-13. Test functions D1 to D2. Commit and push.
-14. Validate user needs A, B, C and D.
-15. Review the code one last time and comment thoroughly. Make sure Doxygen formatting is applied.
+11. ~~Learn about how to compile a .c file. Learn about GCC and Makefiles.~~
+12. ~~Complete user need D.~~
+13. ~~Test functions D1 to D2. Commit and push.~~
+14. ~~Validate user needs A, B, C and D.~~
+15. ~~Review the code one last time and comment thoroughly. Make sure Doxygen formatting is applied.~~
 16. Write README.me.
 17. Complete DESIGN.md with a conclusion to the project.
 

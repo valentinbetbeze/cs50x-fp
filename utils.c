@@ -215,7 +215,7 @@ void free_tokens(Token *head)
 }
 
 
-bool is_option(char *arg)
+bool is_option(const char *arg)
 {
 	if (arg == NULL)
 	{
@@ -231,7 +231,7 @@ bool is_option(char *arg)
 }
 
 
-void recursive_deletion(char *path)
+void recursive_deletion(const char *path)
 {
 	DIR *dir = opendir(path);
 	if (dir == NULL)

@@ -438,10 +438,51 @@ void make(Token *head, int argc)
 
 void run(Token *head, int argc)
 {
-	if (argc > 1)
+	if (get_argv(head, 0) == NULL)
 	{
-		printf("Error: Missing operand\n");
+		printf("Error: Cannot access command\n");
 		return;
 	}
-}
 
+	// Create array of string for command-line arguments
+	char **argv = calloc(argc + 1, sizeof(char *));
+	if (argv == NULL)
+	{
+		printf("Error: Memory allocation failed\n");
+		return;
+	}
+
+	// Get command-line arguments
+	for (int i = 0; i < argc; i++)
+	{
+		argv[i] = (char *) calloc(SIZE_INPUT, 1);
+		if (argv[i] == NULL)
+		{
+			printf("Error: Memory allocation failed\n");
+			// Free all memory
+			for (int i = 0; i < argc; i++)
+			{
+				free(argv[i]);
+			}
+			free(argv);
+			return;
+		}
+		strcpy(argv[i], get_argv(head, i));
+	}
+	// Last argument must be NULL for execv() to work
+	argv[argc] = NULL;
+
+	// Run the executable
+	if (execv(get_argv(head, 0), argv) == -1)
+	{
+		perror("Error: ");
+		return;
+	}
+
+	// Free all memory
+	for (int i = 0; i < argc; i++)
+	{
+		free(argv[i]);
+	}
+	free(argv);
+}

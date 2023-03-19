@@ -167,10 +167,37 @@ void mv(Token *head, int argc);
 */
 void cat(Token *head, int argc);
 
-
+/**
+ * void make(Token *head, int argc)
+ * @brief Create the executable of a .c source file.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function make() accepts a pointer @p head and an integer
+ * @p argc as input. It compiles a source code file in c language
+ * using the GCC compiler and creates the executable. Several
+ * source code files can be given as arguments, as long as they're
+ * in c language.
+*/
 void make(Token *head, int argc);
 
-
+/**
+ * void run(Token *head, int argc)
+ * @brief Execute a program file.
+ * 
+ * @param[in] head	Memory area where the parsed data is.
+ * @param[in] argc	Number of arguments.
+ * @return			Nothing.
+ * 
+ * The function run() accepts a pointer @p head and an integer
+ * @p argc as input. It runs a program file as long as the file
+ * is an executable. The function use the first argument as path
+ * to the file, and the other arguments, if any, as arguments
+ * themselves to the given executable file.
+*/
 void run(Token *head, int argc);
+
 
 #endif // COMMANDS_H

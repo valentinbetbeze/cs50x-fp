@@ -15,7 +15,6 @@
  * checks the head's argument. If valid, the program will call and 
  * execute the command along with other arguments present in the linked
  * list.
- * @todo To complete.
 */
 
 #include <stdio.h>
