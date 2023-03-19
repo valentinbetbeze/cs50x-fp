@@ -1,13 +1,13 @@
 // Implement the input command functions
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
-//#include <sys/types.h>
 
 #include "commands.h"
 
@@ -44,7 +44,7 @@ void ls(Token *head, int argc)
 		char *argument = get_argv(head, i);
 		if (is_option(argument))
 		{
-			for (int j = 1; j < strlen(argument); j++)
+			for (int j = 1; j < (int) strlen(argument); j++)
 			{
 				switch (argument[j])
 				{
@@ -162,6 +162,7 @@ void touch(Token *head, int argc)
 		 * Set default rights to:
 		 * 	user read:		on
 		 * 	user write:		on
+		 * 	user execute:	on
 		 * 	group read:		on
 		 * 	others read:	on
 		*/
@@ -185,7 +186,7 @@ void rm(Token *head, int argc)
 		char *argument = get_argv(head, i);
 		if (is_option(argument))
 		{
-			for (int j = 1; j < strlen(argument); j++)
+			for (int j = 1; j < (int) strlen(argument); j++)
 			{
 				switch (argument[j])
 				{
@@ -365,3 +366,82 @@ void cat(Token *head, int argc)
 		fclose(file);
 	}
 }
+
+
+void make(Token *head, int argc)
+{
+	if (argc < 2)
+	{
+		printf("Error: Missing operand\n");
+		return;
+	}
+
+	char *extension = malloc(SIZE_INPUT * sizeof(char));
+	if (extension == NULL)
+	{
+		printf("Error: Memory allocation failed\n");
+		return;
+	}
+
+	// Compile each source file
+	for (int i = 1; i < argc; i++)
+	{
+		memset(extension, 0, SIZE_INPUT);
+		/**
+		 * This pointer will be dynamic. It will help store each
+		 * character of the extension while not losing the original
+		 * adress.
+		*/
+		char *ptr = extension;
+
+		bool ext_exist = false;
+		char name[SIZE_INPUT] = {0};
+
+		char *full_name = get_argv(head, i);
+		int full_name_len = (int) strlen(full_name);
+		
+		// Check if .c file
+		for (int j = 0; j < full_name_len; j++)
+		{
+			if (full_name[j] == '.' || ext_exist)
+			{
+				ext_exist = true;
+				*ptr = full_name[j];
+				ptr++;
+			}
+			else
+			{
+				// Get the file name only (will be the executable's name)
+				name[j] = full_name[j];
+			}
+		}
+
+		if (strcmp(extension, ".c"))
+		{
+			printf("Error: %s is not a C source file\n", full_name);
+			continue;
+		}
+
+		char command[PATH_MAX] = {0};
+		snprintf(command, sizeof(command), "gcc -o %s %s\n", name, full_name);
+
+		if (system(command) == -1)
+		{
+			free(extension);
+			perror("Error: ");
+			return;
+		}
+	}
+	free(extension);
+}
+
+
+void run(Token *head, int argc)
+{
+	if (argc > 1)
+	{
+		printf("Error: Missing operand\n");
+		return;
+	}
+}
+

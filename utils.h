@@ -128,9 +128,10 @@ bool is_option(char *arg);
 
 /**
  * void recursive_deletion(char *path)
- * @brief Delete the folder as well as all of its content.
+ * @brief Delete the folder given in path, as well as all of its
+ * content.
  * 
- * @param[in] path	Path to the folder to remove
+ * @param[in] path	Path to the folder to remove.
  * @return			Nothing.
  * 
  * The function recursive_deletion() accepts a character pointer

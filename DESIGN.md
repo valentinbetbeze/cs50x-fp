@@ -29,9 +29,8 @@ Development of a simple bash-like command-line interface in C. The purpose of th
     <li>C3. Rename a directory structure element (folder or file).</li>
     <li>C4. Move a directory structure element (folder or file) to a specific location.</li>
     <br>
-    <li>D1. Modify the content of a file.</li>
-    <li>D2. Compile a .c file.</li>
-    <li>D3. Run a .o file.</li>
+    <li>D1. Compile a .c file.</li>
+    <li>D2. Run a .o file.</li>
 </ul>
 
 ## Other requirements
@@ -62,7 +61,7 @@ Development of a simple bash-like command-line interface in C. The purpose of th
 10. ~~Test functions C1 to C4. Commit and push.~~
 11. Learn about how to compile a .c file. Learn about GCC and Makefiles.
 12. Complete user need D.
-13. Test functions D1 to D4. Commit and push.
+13. Test functions D1 to D2. Commit and push.
 14. Validate user needs A, B, C and D.
 15. Review the code one last time and comment thoroughly. Make sure Doxygen formatting is applied.
 16. Write README.me.

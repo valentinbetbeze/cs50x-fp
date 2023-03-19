@@ -102,6 +102,14 @@ int main(void)
 			{
 				cat(head, argc);
 			}
+			else if (!strcmp(command, "make"))
+			{
+				make(head, argc);
+			}
+			else if (command[0] == '.')
+			{
+				run(head, argc);
+			}
 			else if (strcmp(command, "exit"))
 			{
 				printf("Error: %s: Unknown command\n", command);
@@ -113,3 +121,4 @@ int main(void)
 	free(input);
     return 0;
 }
+

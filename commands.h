@@ -168,4 +168,9 @@ void mv(Token *head, int argc);
 void cat(Token *head, int argc);
 
 
+void make(Token *head, int argc);
+
+
+void run(Token *head, int argc);
+
 #endif // COMMANDS_H

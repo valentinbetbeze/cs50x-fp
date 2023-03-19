@@ -1,18 +1,20 @@
-PROGNAME := $(basename $(firstword $(MAKECMDGOALS)))
-SRC := $(PROGNAME).c
-UTILS := utils.c
-COMMANDS := commands.c
-OBJS := $(SRC:.c=.o) $(UTILS:.c=.o) $(COMMANDS:.c=.o)
+# Compiler flags
+FLAGS   = -Wall -fmax-errors=10 -Wextra
+# Required object files
+OBJ = cli.o utils.o commands.o
+# Name of the executable file
+EXE     = cli
 
-all: $(PROGNAME)
 
-$(PROGNAME): $(OBJS)
-	gcc -o $(PROGNAME) $(OBJS)
+all: $(EXE)
 
+$(EXE): $(OBJ)
+	gcc $(FLAGS) -o $(EXE) $(OBJ) 
+	
 %.o: %.c
-	gcc -c $< -o $@
+	gcc $(FLAGS) -c -o $@ $<
 
-clean:
-	rm -f $(PROGNAME) $(OBJS)
+clear:
+	rm -f $(OBJ) $(EXE)
 
-.PHONY: clean
+.PHONY: clear

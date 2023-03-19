@@ -98,14 +98,14 @@ Token *parse_input(char *ptr)
 	}
 
 	// Parsing loop
-	for (int i = 0; i < strlen(ptr); i++)
+	for (int i = 0; i < (int) strlen(ptr); i++)
 	{
 		/**
 		 * If we have a space, if we were not parsing, and if we're
 		 * not within quotation marks: argument found.
 		*/
 		if ((ptr[i] == ' ' && !parsing && !marks) ||
-			(i == strlen(ptr) - 1))
+			(i == (int) strlen(ptr) - 1))
 		{	
 			parsing = true;
 			/**
@@ -114,7 +114,7 @@ Token *parse_input(char *ptr)
 			 * 	2. This is the first argument of the command line
 			 * 	3. Nor the first, nor the last argument.
 			*/
-			if ((i == strlen(ptr) - 1) && ptr[i] != '"')
+			if ((i == (int) strlen(ptr) - 1) && ptr[i] != '"')
 			{
 				buffer[index_buffer] = ptr[i];
 			}
@@ -272,6 +272,7 @@ void recursive_deletion(char *path)
 				return;
 			}
 		}
+		// Go to next element
 		entry = readdir(dir);
     }
 
