@@ -56,10 +56,10 @@ Development of a simple bash-like command-line interface in C. The purpose of th
 4. ~~Test, commit and push.~~
 5. ~~Complete user need A. Learning how to interact with the operating system will be mandatory (system calls).~~
 6. ~~Test functions A1 and A2. Commit and push.~~
-7. Complete user need B. 
-8. Test functions B1 to B3. Commit and push.
-9. Complete user need C.
-10. Test functions C1 to C4. Commit and push.
+7. ~~Complete user need B.~~
+8. ~~Test functions B1 to B3. Commit and push.~~
+9. ~~Complete user need C.~~
+10. ~~Test functions C1 to C4. Commit and push.~~
 11. Learn about how to compile a .c file. Learn about GCC and Makefiles.
 12. Complete user need D.
 13. Test functions D1 to D4. Commit and push.
