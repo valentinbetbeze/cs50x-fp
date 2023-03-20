@@ -1,5 +1,5 @@
 # Simple bash-like command-line interface.
-#### Video demo: [link]([empty](https://www.youtube.com/watch?v=UXgAKzzFCYo))
+#### Video demo: [link](https://www.youtube.com/watch?v=UXgAKzzFCYo)
 <br>
 <img src=screenshot.png width=320></img><br>
 <br>
