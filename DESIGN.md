@@ -33,6 +33,7 @@ Development of a simple bash-like command-line interface in C. The purpose of th
     <li>D2. Run a .o file.</li>
 </ul>
 
+
 ## Other requirements
 * Thoroughly comment the code using Doxygen formatting.
 * Write a DESIGN.md to explain design choices.
@@ -46,27 +47,3 @@ Development of a simple bash-like command-line interface in C. The purpose of th
 * Milestone 2 - The CLI program can operate system calls: **16/03/2023**
 * Milestone 3 - The CLI program allows the user to run a C program: **18/03/2023**
 * End date - All specifications are verified, all user needs are validated, all documentation is written: **19/03/2023**
-
-
-## Steps
-1. ~~Create a function to read a user input from the command line and parse it. Return the elements of the command.~~
-2. ~~Test, commit and push.~~
-3. ~~Create the interface for the CLI. First within bash itself, later on in a separate window. Issue a statement at the launch of the interface to tell how to exit it. If necessary, create the function to exit the interface. Include error handling.~~
-4. ~~Test, commit and push.~~
-5. ~~Complete user need A. Learning how to interact with the operating system will be mandatory (system calls).~~
-6. ~~Test functions A1 and A2. Commit and push.~~
-7. ~~Complete user need B.~~
-8. ~~Test functions B1 to B3. Commit and push.~~
-9. ~~Complete user need C.~~
-10. ~~Test functions C1 to C4. Commit and push.~~
-11. ~~Learn about how to compile a .c file. Learn about GCC and Makefiles.~~
-12. ~~Complete user need D.~~
-13. ~~Test functions D1 to D2. Commit and push.~~
-14. ~~Validate user needs A, B, C and D.~~
-15. ~~Review the code one last time and comment thoroughly. Make sure Doxygen formatting is applied.~~
-16. Write README.me.
-17. Complete DESIGN.md with a conclusion to the project.
-
-
-## Design choices
-To be completed.

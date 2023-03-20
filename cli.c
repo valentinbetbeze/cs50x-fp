@@ -2,19 +2,9 @@
  * Created on 03/13/2023
  * @author Valentin Betbeze <valentin.betbeze@gmail.com>
  * 
- * This program is a simple bash-like command line interface.
+ * This program is a simple bash-like command-line interface.
  * I developed it as my final project for the CS50x 2023 online 
  * course.
- * 
- * The program allows the user to enter command lines to operate various 
- * actions, such as listing the content of a directory, moving around
- * the directory structure, modifying the directory structure and much
- * more.
- * To do so, the program first retrieves, parses, and stores the input
- * into a linked list. It then goes through a switch case statement and 
- * checks the head's argument. If valid, the program will call and 
- * execute the command along with other arguments present in the linked
- * list.
 */
 
 #include <stdio.h>

@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
+#include <sys/wait.h>
 
 #include "commands.h"
 
@@ -438,7 +439,8 @@ void make(Token *head, int argc)
 
 void run(Token *head, int argc)
 {
-	if (get_argv(head, 0) == NULL)
+	char *command = get_argv(head, 0);
+	if (command == NULL)
 	{
 		printf("Error: Cannot access command\n");
 		return;
@@ -458,11 +460,11 @@ void run(Token *head, int argc)
 		argv[i] = (char *) calloc(SIZE_INPUT, 1);
 		if (argv[i] == NULL)
 		{
+			// If memory alloc failed, free all previous memory
 			printf("Error: Memory allocation failed\n");
-			// Free all memory
-			for (int i = 0; i < argc; i++)
+			for (int j = 0; j < i; j++)
 			{
-				free(argv[i]);
+				free(argv[j]);
 			}
 			free(argv);
 			return;
@@ -473,10 +475,26 @@ void run(Token *head, int argc)
 	argv[argc] = NULL;
 
 	// Run the executable
-	if (execv(get_argv(head, 0), argv) == -1)
+	pid_t pid = fork();
+	if (pid < 0)
 	{
-		perror("Error: ");
-		return;
+		// Forking failed
+		perror("Error: fork: ");
+		exit(EXIT_FAILURE);
+	}
+	if (pid == 0)
+	{
+		// Child process
+		if (execv(command, argv) == -1)
+		{
+			perror("Error: execv: ");
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		// Wait for the child process to complete
+		pid = wait(NULL);
 	}
 
 	// Free all memory
@@ -486,3 +504,4 @@ void run(Token *head, int argc)
 	}
 	free(argv);
 }
+

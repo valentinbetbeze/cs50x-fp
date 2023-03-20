@@ -195,7 +195,8 @@ void make(Token *head, int argc);
  * @p argc as input. It runs a program file as long as the file
  * is an executable. The function use the first argument as path
  * to the file, and the other arguments, if any, as arguments
- * themselves to the given executable file.
+ * themselves to the given executable file. After the process is
+ * executed, the father process resumes.
 */
 void run(Token *head, int argc);
 
